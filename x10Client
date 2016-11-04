@@ -1,0 +1,84 @@
+#!/usr/bin/perl
+require 5.002;
+use strict;
+use Socket;
+use Time::Local;
+my ( $ascii_remote_ip_addr_1, $ascii_remote_ip_addr_2,  $cmd_str, $element, $implied_waits, $last_element, 
+     @raw_packet, @final_packet, @reply_array, @new_reply_array, @hex_bytes, $byte, $timeout, $number_of_clients,
+     $protocol, $remote_ip_addr_1, $remote_port_1, $remote_socket_addr_1, 
+     $reply, $reply_str, $rin, $rout);
+#
+#
+
+if (open (NET_CFG,"<$ARGV[0]") == 0) {
+    printf ("Network Configuration file not found: %s\n",$ARGV[0]);
+    exit;
+}
+
+if (open (SCRIPT,"<$ARGV[1]") == 0) {
+    if (open (SCRIPT,"<$ARGV[1].xcs") == 0) {
+        printf ("Script file not found: %s %s.x10\n",$ARGV[1],$ARGV[1]);
+        exit;
+    }
+}
+
+if ($#ARGV == 2) {
+    if ( $ARGV[2] =~ /xcl$/ ) {
+        if (open (LOG, ">$ARGV[2]") == 0) {
+	    printf ("Log file could not be opened: $ARGV[2]\n");
+	    exit;
+	} 
+    } else {
+	if (open(LOG, ">$ARGV[2].xcl") == 0) {
+	    printf ("Log file could not be opened: $ARGV[2].xcl\n");
+	    exit;
+	} 
+    }
+} else {
+    if (open(LOG, ">$ARGV[1].xcl") == 0) {
+	printf ("Log file could not be opened: $ARGV[1].xcl\n");
+	exit;
+    }
+} 
+
+$number_of_clients = <NET_CFG>;
+
+$ascii_remote_ip_addr_1 = <NET_CFG>;
+chop ($ascii_remote_ip_addr_1);
+$remote_ip_addr_1 = inet_aton($ascii_remote_ip_addr_1);
+$remote_port_1 = <NET_CFG>;
+
+$protocol = getprotobyname("tcp");
+socket (S_ID1, PF_INET, SOCK_STREAM, $protocol) or die "socket creation: $!";
+ 
+$remote_socket_addr_1 = sockaddr_in($remote_port_1, $remote_ip_addr_1);
+connect (S_ID1, $remote_socket_addr_1) or die "connect: $!";
+
+vec($rin, fileno(S_ID1), 1) = 1;
+
+while (<SCRIPT>) {
+    if ($_ =~ /^WAIT/) {
+        # wait for a reply
+	$timeout = 0;
+        $reply_str = "";
+        while (!$timeout) {
+            select($rout=$rin,undef,undef,30);
+	    if (vec($rout,fileno(S_ID1),1) == 1) {
+                recv(S_ID1,$reply_str,255,0);
+		$timeout = 1;
+	    } else {
+	        $timeout = 1;
+	    }
+        }
+	printf (LOG "X10 response received:\n");
+        printf (LOG "$reply_str\n");
+    } else {
+        # send a message
+        chop;
+        printf (LOG "Sending: $_\n");
+        send(S_ID1, $_, 0);
+    }
+}
+close (S_ID1);
+close (LOG);
+

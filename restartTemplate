@@ -1,0 +1,8 @@
+#!/bin/bash
+if (!(/usr/bin/pgrep -u root x10_server)) then
+  sudo _Dest_/x10_server -d
+fi
+if (!(/usr/bin/pgrep x10lights)) then
+  _Dest_/x10lights -d
+fi
+

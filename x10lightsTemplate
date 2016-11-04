@@ -1,0 +1,61 @@
+#!/usr/bin/perl
+require 5.002;
+use strict;
+use Socket;
+use Time::Local;
+my ($current_time, $var, %sunset, $i, $date_str, $month, $day, $hour, $min, $activation_time, $ogmt_time, $on_day_normalized_time, $current_day_normalized_time, $delay, $pid );
+#
+#
+chdir ("_Dest_");
+open (SUNSET, "<sunset.txt");
+$i = 1;
+while (<SUNSET>) {
+    ($sunset{"Jan"}{$i},
+     $sunset{"Feb"}{$i},
+     $sunset{"Mar"}{$i},
+     $sunset{"Apr"}{$i},
+     $sunset{"May"}{$i},
+     $sunset{"Jun"}{$i},
+     $sunset{"Jul"}{$i},
+     $sunset{"Aug"}{$i},
+     $sunset{"Sep"}{$i},
+     $sunset{"Oct"}{$i},
+     $sunset{"Nov"}{$i},
+     $sunset{"Dec"}{$i++}) = (split(/ +/,$_))[2,4,6,8,10,12,14,16,18,20,22,24];
+}
+
+
+$ENV{"TZ"} = "GMT";
+if ($ARGV[0] eq '-d') {
+    $pid = fork();
+    if ($pid == 0) { # child, close standard I/O files and continue
+	close(STDIN);
+	close(STDOUT);
+	close(STDERR);
+    } else {
+	exit(0);
+    }
+}
+while (1==1) {
+    $current_time = time();
+    $date_str = scalar localtime($current_time);
+    ($month,$day,$ogmt_time) = (split(/ +/,$date_str))[1,2,3];
+    $activation_time = $sunset{$month}{$day};
+    ($hour, $min) = (split(/:/,$ogmt_time))[0,1];
+    $current_day_normalized_time = $hour * 3600 + $min * 60;
+    $activation_time =~ m/(\d\d)(\d\d)/;
+    ($hour, $min) = ($1, $2);
+    $on_day_normalized_time = $hour * 3600 + $min * 60;
+    if ($current_day_normalized_time >= $on_day_normalized_time) {
+        $date_str = scalar localtime($current_time + 24 * 3600);
+        ($month,$day,$ogmt_time) = (split(/ +/,$date_str))[1,2,3];
+        $activation_time = $sunset{$month}{$day};
+        $activation_time =~ m/(\d\d)(\d\d)/;
+        ($hour, $min) = ($1, $2);
+        $on_day_normalized_time = $hour * 3600 + $min * 60 + 24 * 3600;
+    }
+    $delay = $on_day_normalized_time - $current_day_normalized_time;
+    sleep $delay;
+    system ('./x10Client net on');
+    sleep 10;
+}

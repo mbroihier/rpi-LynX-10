@@ -1,0 +1,4 @@
+0 4 * * * _Dest_/x10Client _Dest_/net _Dest_/off
+0 23 * * * _Dest_/x10Client _Dest_/net _Dest_/off
+1 * * * * _Dest_/restart
+
