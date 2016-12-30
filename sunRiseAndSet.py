@@ -1,3 +1,4 @@
+#!/usr/bin/python
 import homogeneoustransforms as ht
 import earthInfo
 import time
