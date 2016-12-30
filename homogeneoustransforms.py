@@ -40,6 +40,9 @@ class vector(transforms):
     def dot (self,second):
         return self.x * second.x + self.y * second.y + self.z * second.z + self.t * second.t
     
+    def mag (self):
+        return self.x * self.x + self.y * self.y + self.z * self.z
+    
 class rotateX(transforms):
     def __init__ (self, theta):
         transforms.__init__ (self,np.matrix ( ((1, 0, 0, 0),

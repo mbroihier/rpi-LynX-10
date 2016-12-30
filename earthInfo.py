@@ -6,7 +6,7 @@ import homogeneoustransforms as ht
 
 radius = 6371.0 #km 
 distanceToSun = 149597890.0 # km
-tiltRelativeToTheSunEarthPlane = 24.5 * math.pi / 180 # radians
+tiltRelativeToTheSunEarthPlane = 23.44 * math.pi / 180 # radians
 oneDay = 23 * 3600 + 56 * 60 + 4 # seconds relative to an "inertial" (fixed start) frame
 oneYear = calendar.timegm(datetime.datetime.strptime("6/21/2017:04:24","%m/%d/%Y:%H:%M").timetuple()) - calendar.timegm(datetime.datetime.strptime("6/20/2016:22:34","%m/%d/%Y:%H:%M").timetuple());
 
