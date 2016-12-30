@@ -15,7 +15,7 @@ angleOfEarthRelativeToSun = (timeSinceReference % earthInfo.oneYear)*2*math.pi /
 
 pointOnEarth = ht.vector(0,0,0)
 
-angleOffsetToTrueNoon =  (calendar.timegm(datetime.datetime.strptime("6/20/2016:12:00","%m/%d/%Y:%H:%M").timetuple()) - calendar.timegm(datetime.datetime.strptime("6/20/2016:22:34","%m/%d/%Y:%H:%M").timetuple()))*2*math.pi/earthInfo.oneDay
+angleOffsetToTrueNoon =  (calendar.timegm(datetime.datetime.strptime("6/20/2016:12:00","%m/%d/%Y:%H:%M").timetuple()) - calendar.timegm(datetime.datetime.strptime("6/20/2016:22:34","%m/%d/%Y:%H:%M").timetuple()))*2*math.pi/earthInfo.oneDay + math.pi
 
 longitude = float(sys.argv[2]) * 2 * math.pi / 360.0 - angleOffsetToTrueNoon
 
@@ -41,9 +41,6 @@ diskMag = sunVector.mag()
 sunIsNowDown = 1
 lastTimeSunWasDown = sunIsNowDown
 
-pointsAtLatitude = [ht.vector(0,0,0) for i in range(0,24*3600)]
-
-andPrintNextOne = 0
 firstTime = 1
 sunUp = 0
 delta = 30
@@ -59,10 +56,12 @@ for day in range(0,367):
 
     for secondOfDay in range(0,earthInfo.oneDay,delta):
         UTCtimeOfDay = currentTime
-        earthToSunTransform = earthToSunTransformPart1*ht.rotateZ(math.pi*2*UTCtimeOfDay / earthInfo.oneDay)
+#        earthToSunTransform = earthToSunTransformPart1*ht.rotateZ(math.pi*2*UTCtimeOfDay / earthInfo.oneDay)
+        earthToSunTransform = earthToSunTransformPart1*ht.rotateZ(math.pi*2*secondOfDay / earthInfo.oneDay)
 
         pointOnEarthRelativeToSun = earthToSunTransform * pointOnEarth
         mag = pointOnEarthRelativeToSun.mag()
+#        print 'point on earth relative to sun: ', pointOnEarthRelativeToSun, 'mag: ', mag
         sunIsNowDown = mag > diskMag
         if sunIsNowDown != lastTimeSunWasDown and not firstTime:
             if not sunIsNowDown:
@@ -70,7 +69,7 @@ for day in range(0,367):
             else:
                 sunRise = ('0' if len(str(time.gmtime(sunUp).tm_hour)) == 1 else '')+str(time.gmtime(sunUp).tm_hour)+('0'if len(str(time.gmtime(sunUp).tm_min)) ==1 else '')+str(time.gmtime(sunUp).tm_min)
                 sunSet = ('0' if len(str(time.gmtime(UTCtimeOfDay).tm_hour)) == 1 else '')+str(time.gmtime(UTCtimeOfDay).tm_hour)+('0'if len(str(time.gmtime(UTCtimeOfDay).tm_min)) ==1 else '')+str(time.gmtime(UTCtimeOfDay).tm_min)
-#                print ("%2d %2d %s %s" % (time.gmtime(sunUp).tm_mon,time.gmtime(sunUp).tm_mday,sunRise,sunSet))
+#                print ("****%2d %2d %s %s" % (time.gmtime(sunUp).tm_mon,time.gmtime(sunUp).tm_mday,sunRise,sunSet))
                 timeTable [time.gmtime(sunUp).tm_mon - 1][time.gmtime(sunUp).tm_mday - 1] = sunRise + ' ' + sunSet
 
         currentTime += delta
