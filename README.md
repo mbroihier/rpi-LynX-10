@@ -19,3 +19,17 @@ The application, as configured, turns on a set of lights at my house at sunset a
 I have apps on my i and Android devices that can send on and off commands to x10_server running on the Pi so that I can turn the lights on and off manually.
 
 This is a very old system.  I built it back in 1998 and it was orignally controlled by a 486 machine that I had that was running Red Hat Linux.  This was eventually replaced by a Pentium, Pentium II, and then a fitPC.  Although old, it still works and as I mentioned above, I now have apps I've built for Apple and Android devices sending commands to this server over my private home network.
+
+I've included a tool, sunRiseSet.py, that will creat a replacement sunset.txt file that is tailored to a location.  This tool isn't perfect.  It's based on a circular earth orbit and a spherical earth.  To generate a sunset.txt file do this:
+
+~~~~
+./sunRiseSet.py <lat> <long> >sunset.txt
+~~~~
+
+where the parameters are latitude (+ North) and longitude (+ East) in degrees.  For me, the following is close enough (North Dallas area):
+
+~~~~
+./sunRiseSet.py 33 -97 >sunset.txt
+~~~~
+
+When the tool finishes, copy sunset.txt over the the installed version and kill x10lights.  The process will be restarted by the cron entires installed via make.
